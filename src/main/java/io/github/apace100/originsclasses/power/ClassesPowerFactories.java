@@ -3,22 +3,19 @@ package io.github.apace100.originsclasses.power;
 import io.github.apace100.apoli.data.ApoliDataTypes;
 import io.github.apace100.apoli.power.VariableIntPower;
 import io.github.apace100.apoli.power.factory.PowerFactory;
-import io.github.apace100.apoli.power.factory.condition.ConditionFactory;
 import io.github.apace100.apoli.registry.ApoliRegistries;
+import io.github.apace100.apoli.util.modifier.Modifier;
 import io.github.apace100.calio.data.SerializableData;
-import io.github.apace100.calio.data.SerializableDataType;
 import io.github.apace100.calio.data.SerializableDataTypes;
 import io.github.apace100.originsclasses.OriginsClasses;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.LeavesBlock;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.AxeItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tag.BlockTags;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 
 import java.util.*;
 
@@ -29,19 +26,16 @@ public class ClassesPowerFactories {
         register(new PowerFactory<>(new Identifier(OriginsClasses.MODID, "craft_amount"),
             new SerializableData()
                 .add("item_condition", ApoliDataTypes.ITEM_CONDITION, null)
-                .add("modifier", SerializableDataTypes.ATTRIBUTE_MODIFIER, null)
-                .add("modifiers", SerializableDataTypes.ATTRIBUTE_MODIFIERS, null),
+                .add("modifier", Modifier.DATA_TYPE, null)
+                .add("modifiers", Modifier.LIST_TYPE, null),
             data ->
                 (type, player) -> {
                     CraftAmountPower power = new CraftAmountPower(type, player, data.isPresent("item_condition") ?
                         data.get("item_condition") : (stack -> true));
-                    if(data.isPresent("modifier")) {
-                        power.addModifier(data.getModifier("modifier"));
-                    }
-                    if(data.isPresent("modifiers")) {
-                        ((List<EntityAttributeModifier>)data.get("modifiers"))
-                            .forEach(power::addModifier);
-                    }
+                    data.ifPresent("modifier", power::addModifier);
+                    data.<List<Modifier>>ifPresent("modifiers",
+                        mods -> mods.forEach(power::addModifier)
+                    );
                     return power;
                 }));
         register(new PowerFactory<>(new Identifier(OriginsClasses.MODID, "lumberjack"),
@@ -63,7 +57,7 @@ public class ClassesPowerFactories {
                                             continue;
                                         }
                                         newPos.set(pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz);
-                                        BlockState state = pl.world.getBlockState(newPos);
+                                        BlockState state = pl.getWorld().getBlockState(newPos);
                                         if(state.isOf(bs.getBlock()) && !affected.contains(newPos)) {
                                             BlockPos savedNewPos = newPos.toImmutable();
                                             affected.add(savedNewPos);

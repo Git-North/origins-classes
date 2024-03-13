@@ -12,13 +12,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.loot.LootManager;
-import net.minecraft.loot.LootPool;
-import net.minecraft.loot.LootTable;
-import net.minecraft.loot.entry.LootPoolEntry;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.world.World;
@@ -28,9 +23,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.HashSet;
-import java.util.Random;
+import net.minecraft.util.math.random.Random;
 import java.util.Set;
 
 @Mixin(MerchantEntity.class)
@@ -90,12 +83,12 @@ public abstract class MerchantEntityMixin extends PassiveEntity {
 
     private TradeOfferList buildAdditionalOffers() {
         TradeOfferList list = new TradeOfferList();
-        Random random = new Random();
-        Set<Item> excludedItems = TagUtil.getAllEntries(Registry.ITEM, ClassesTags.MERCHANT_BLACKLIST);
+        Random random = getRandom();
+        Set<Item> excludedItems = TagUtil.getAllEntries(Registries.ITEM, ClassesTags.MERCHANT_BLACKLIST);
         list.add(new TradeOffer(
             new ItemStack(Items.EMERALD, random.nextInt(12) + 6),
             ItemUtil.createMerchantItemStack(ItemUtil.getRandomObtainableItem(
-                this.world.getServer(),
+                this.getWorld().getServer(),
                 random,
                 excludedItems), random),
             1,
@@ -103,13 +96,13 @@ public abstract class MerchantEntityMixin extends PassiveEntity {
             0.05F)
         );
         Item desiredItem = ItemUtil.getRandomObtainableItem(
-            this.world.getServer(),
+            this.getWorld().getServer(),
             random,
             excludedItems);
         list.add(new TradeOffer(
             new ItemStack(desiredItem, 1 + random.nextInt(Math.min(16, desiredItem.getMaxCount()))),
             ItemUtil.createMerchantItemStack(ItemUtil.getRandomObtainableItem(
-                this.world.getServer(),
+                this.getWorld().getServer(),
                 random,
                 excludedItems), random),
             1,

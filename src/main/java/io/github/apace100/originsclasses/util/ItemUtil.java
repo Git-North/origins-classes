@@ -5,16 +5,17 @@ import io.github.apace100.originsclasses.mixin.*;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.loot.LootDataType;
 import net.minecraft.loot.LootManager;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.entry.CombinedEntry;
 import net.minecraft.loot.entry.ItemEntry;
 import net.minecraft.loot.entry.LootPoolEntry;
 import net.minecraft.loot.entry.TagEntry;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.util.math.random.Random;
 
 import java.util.*;
 
@@ -55,24 +56,24 @@ public class ItemUtil {
         }
 
         LootManager manager = server.getLootManager();
-        Set<Identifier> lootTables = manager.getTableIds();
+        Collection<Identifier> lootTables = manager.getIds(LootDataType.LOOT_TABLES);
         LootTableAccessor table;
         for(Identifier id : lootTables) {
-            table = (LootTableAccessor)manager.getTable(id);
-            LootPool[] pools = table.getPools();
+            table = (LootTableAccessor)manager.getElement(LootDataType.LOOT_TABLES, id);
+            List<LootPool> pools = table.getPools();
             Queue<LootPoolEntry> entryQueue = new LinkedList<>();
             for (LootPool pool : pools) {
-                LootPoolEntry[] entries = ((LootPoolAccessor) pool).getEntries();
-                entryQueue.addAll(Arrays.asList(entries));
+                List<LootPoolEntry> entries = ((LootPoolAccessor) pool).getEntries();
+                entryQueue.addAll(entries);
             }
             while(!entryQueue.isEmpty()) {
                 LootPoolEntry entry = entryQueue.remove();
                 if(entry instanceof ItemEntry) {
-                    OBTAINABLE.add(((ItemEntryAccessor)entry).getItem());
+                    OBTAINABLE.add(((ItemEntryAccessor)entry).getItem().value());
                 } else if(entry instanceof TagEntry) {
-                    OBTAINABLE.addAll(TagUtil.getAllEntries(Registry.ITEM, ((TagEntryAccessor)entry).getName()));
+                    OBTAINABLE.addAll(TagUtil.getAllEntries(Registries.ITEM, ((TagEntryAccessor)entry).getName()));
                 } else if(entry instanceof CombinedEntry) {
-                    entryQueue.addAll(Arrays.asList(((CombinedEntryAccessor)entry).getChildren()));
+                    entryQueue.addAll(((CombinedEntryAccessor)entry).getChildren());
                 }
             }
         }
