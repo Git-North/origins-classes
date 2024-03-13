@@ -8,9 +8,6 @@
 name: Gradle Package
 
 on: push
-  release:
-    types: [created]
-
 jobs:
   build:
 
