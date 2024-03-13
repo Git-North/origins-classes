@@ -113,12 +113,13 @@ publishing {
 
 	// select the repositories you want to publish to
 	 repositories {
-    maven {
-      name = "GitHubPackages"
-      url = "https://maven.pkg.github.com/Git-North/origins-classes"
-      credentials {
-        username = System.getenv("GITHUB_ACTOR")
-        password = System.getenv("GITHUB_TOKEN")
+   	  maven {
+      	   name = "GitHubPackages"
+      	   url = "https://maven.pkg.github.com/Git-North/origins-classes"
+      	   credentials {
+	    username = System.getenv("GITHUB_ACTOR")
+            password = System.getenv("GITHUB_TOKEN")
       }
     }
   }
+}
